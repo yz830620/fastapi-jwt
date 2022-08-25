@@ -42,8 +42,30 @@ async def get_single_post(id: int) -> dict:
 @app.post('/posts', tags=["posts"])
 async def add_posts(post: PostSchema) -> dict:
     post.id = len(posts) + 1
+    # just for example, don't do this in production
     posts.append(post.dict())
     return {
         "data": "post added."
     }
 
+
+@app.post("/user/signup", tags=["user"])
+async def create_user(user: UserSchema = Body(...)):
+    users.append(user)
+    return signJWT(user.email)
+
+def check_user(data= UserLoginSchema):
+    for user in users:
+        # just for example, don't do this in production
+        if user.email == data.email and user.password == data.password:
+            return True
+    return False
+
+
+@app.post("/user/login", tags=["user"])
+async def user_login(user: UserLoginSchema = Body(...)):
+    if check_user(user):
+        return signJWT(user.email)
+    return {
+        "error": "Wrong login details!"
+    }
